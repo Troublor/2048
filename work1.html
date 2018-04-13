@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2048!!!</title>
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.css" rel="stylesheet">
+    <style>.vessel {
+        height: 520px;
+        width: 400px;
+        border-radius: 10px;
+        background: #f8d7da;
+        margin: 100px auto 20px auto;
+        padding: 20px;
+    }
+
+    .billboard {
+        height: 100px;
+        background: #c3e6cb;
+        border-radius: 10px;
+        font-size: 25px;
+        color: cornflowerblue;
+        text-align: center;
+        padding: 27px;
+    }
+
+    .playground {
+        height: 360px;
+        border-radius: 10px;
+        background: #efeda5;
+        margin-top: 20px;
+    }
+
+    .position {
+        height: 80px;
+        width: 80px;
+        float: left;
+        border-radius: 10px;
+        background: #d9ceb9;
+        margin: 5px;
+        padding: 13px;
+        text-align: center;
+        color: white;
+        font-size: 34px;
+    }
+
+    </style>
+</head>
+<body>
+<div class="vessel">
+    <div class="billboard">
+        当前得分：<span id="score"></span>
+    </div>
+    <div class="playground">
+        <div class="position"></div>
+        <div class="position">2</div>
+        <div class="position">4</div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position">4</div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+        <div class="position"></div>
+    </div>
+</div>
+<div style="width: 100%; text-align: center;">
+    使用大写W，A，S，D或上，下，左，右方向键按键来游戏
+    <br>
+    使用jQuery及Bootstrap CDN服务，需要网络连接
+</div>
+
+<script
+        src="http://code.jquery.com/jquery-3.3.1.js"
+        integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+        crossorigin="anonymous"></script>
+
+<script>
+    let score = 0;
+
+    $(function () {
+        show_score();
+        for (let i = 0; i < 4; i++) {
+            generate_new();
+        }
+        $(document).keydown(function (event) {
+            let moved;
+            if (event.keyCode === 65 || event.keyCode === 37) {
+                moved = move_left();
+            } else if (event.keyCode === 87 || event.keyCode === 38) {
+                moved = move_up();
+            } else if (event.keyCode === 68 || event.keyCode === 39) {
+                moved = move_right();
+            } else if (event.keyCode === 83 || event.keyCode === 40) {
+                moved = move_down();
+            } else {
+                return;
+            }
+            show_score();
+            if (moved) {
+                generate_new();
+            }
+            if (is_dead()) {
+                alert("你死了");
+            }
+        });
+    });
+
+    function show_score() {
+        $("#score").html(score.toString());
+    }
+
+    function is_dead() {
+        let dead = true;
+        for (let i = 0; i < 16; i++) {
+            if ($(".position:eq(" + i + ")").html() === "") {
+                dead = false;
+            }
+            let right = i + 1;
+            let down = i + 4;
+            if (i % 4 !== 3) {
+                //有right
+                if ($(".position:eq(" + i + ")").html() === $(".position:eq(" + right + ")").html()) {
+                    dead = false;
+                }
+            }
+            if (i < 12) {
+                //有down
+                if ($(".position:eq(" + i + ")").html() === $(".position:eq(" + down + ")").html()) {
+                    dead = false;
+                }
+            }
+        }
+        return dead;
+    }
+
+    function generate_new() {
+        let full = true;
+        for (let i = 0; i < 16; i++) {
+            if ($(".position:eq(" + i + ")").html() === "") {
+                full = false;
+                break;
+            }
+        }
+        if (full) {
+            return;
+        }
+        let r = Math.floor(Math.random() * 16);
+        let position = $(".position:eq(" + r + ")");
+        while (position.html() !== "") {
+            r = Math.floor(Math.random() * 16);
+            position = $(".position:eq(" + r + ")");
+        }
+        position.html("2");
+
+    }
+
+    function move_left() {
+        let moved = false;
+        for (let i = 0; i < 4; i++) {
+            let first = $(".position:eq(" + (4 * i) + ")");
+            let second = $(".position:eq(" + (4 * i + 1) + ")");
+            let third = $(".position:eq(" + (4 * i + 2) + ")");
+            let fourth = $(".position:eq(" + (4 * i + 3) + ")");
+            moved |= action(first, second, third, fourth);
+        }
+        return moved;
+    }
+
+    function move_right() {
+        let moved = false;
+        for (let i = 0; i < 4; i++) {
+            let first = $(".position:eq(" + (4 * i + 3) + ")");
+            let second = $(".position:eq(" + (4 * i + 2) + ")");
+            let third = $(".position:eq(" + (4 * i + 1) + ")");
+            let fourth = $(".position:eq(" + (4 * i) + ")");
+            moved |= action(first, second, third, fourth);
+        }
+        return moved;
+    }
+
+    function move_up() {
+        let moved = false;
+        for (let i = 0; i < 4; i++) {
+            let first = $(".position:eq(" + i + ")");
+            let second = $(".position:eq(" + (i + 4) + ")");
+            let third = $(".position:eq(" + (i + 8) + ")");
+            let fourth = $(".position:eq(" + (i + 12) + ")");
+            moved |= action(first, second, third, fourth);
+        }
+        return moved;
+    }
+
+    function move_down() {
+        let moved = false;
+        for (let i = 0; i < 4; i++) {
+            let first = $(".position:eq(" + (i + 12) + ")");
+            let second = $(".position:eq(" + (i + 8) + ")");
+            let third = $(".position:eq(" + (i + 4) + ")");
+            let fourth = $(".position:eq(" + i + ")");
+            moved |= action(first, second, third, fourth);
+        }
+        return moved;
+    }
+
+    function action(first, second, third, fourth) {
+        let separate = false;
+        let moved = false;
+        let reach_blank = false;
+        if (first.html() === "") {
+            reach_blank = true;
+        }
+        if (second.html() === "") {
+            reach_blank = true;
+        } else if (reach_blank) {
+            separate = true;
+        }
+        if (third.html() === "") {
+            reach_blank = true;
+        } else if (reach_blank) {
+            separate = true;
+        }
+        if (fourth.html() === "") {
+            reach_blank = true;
+        } else if (reach_blank) {
+            separate = true;
+        } else {
+            separate = false;
+        }
+        if (separate) {
+            moved |= true;
+        }
+        while (separate) {
+            //去空格
+            if (first.html() === "") {
+                first.html(second.html());
+                second.html(third.html());
+                third.html(fourth.html());
+                fourth.html("");
+            }
+            if (second.html() === "") {
+                second.html(third.html());
+                third.html(fourth.html());
+                fourth.html("");
+            }
+            if (third.html() === "") {
+                third.html(fourth.html());
+                fourth.html("");
+            }
+            reach_blank = false;
+            separate = false;
+            if (first.html() === "") {
+                reach_blank = true;
+            }
+            if (second.html() === "") {
+                reach_blank = true;
+            } else if (reach_blank) {
+                separate = true;
+            }
+            if (third.html() === "") {
+                reach_blank = true;
+            } else if (reach_blank) {
+                separate = true;
+            }
+            if (fourth.html() === "") {
+                reach_blank = true;
+            } else if (reach_blank) {
+                separate = true;
+            } else {
+                separate = false;
+            }
+        }
+
+
+        //合并方块
+        if (first.html() === second.html()) {
+            if (first.html() !== "") {
+                score += parseInt(first.html()) + parseInt(second.html());
+                moved |= true;
+            }
+            first.html(parseInt(first.html()) + parseInt(second.html()));
+            second.html(third.html());
+            third.html(fourth.html());
+            fourth.html("");
+        }
+        if (second.html() === third.html()) {
+            if (second.html() !== "") {
+                score += parseInt(second.html()) + parseInt(third.html());
+                moved |= true;
+            }
+            second.html(parseInt(second.html()) + parseInt(third.html()));
+            third.html(fourth.html());
+            fourth.html("");
+        }
+        if (third.html() === fourth.html()) {
+            if (third.html() !== "") {
+                score += parseInt(third.html()) + parseInt(fourth.html());
+                moved |= true;
+            }
+            third.html(parseInt(third.html()) + parseInt(fourth.html()));
+            fourth.html("");
+        }
+        return moved;
+    }
+</script>
+
+</body>
+</html>
